@@ -1,0 +1,39 @@
+<launch>
+
+
+  <arg name="calibration_file"
+    default="$(find image_processor)/config/camchain-imucam-100t14-9250.yaml"/>
+
+  <!-- Image Processor Nodelet  -->
+
+    <node pkg="nodelet" type="nodelet" name="image_processor"
+      args="standalone ImageProcessorNodelet"
+      output="screen">
+
+      <rosparam command="load" file="$(arg calibration_file)"/>
+      <param name="grid_row" value="6"/>
+      <param name="grid_col" value="8"/>
+      <param name="grid_min_feature_num" value="3"/>
+      <param name="grid_max_feature_num" value="6"/>
+      <param name="pyramid_levels" value="4"/>
+      <param name="patch_size" value="21"/>
+      <param name="fast_threshold" value="10"/>
+      <param name="max_iteration" value="30"/>
+      <param name="track_precision" value="0.01"/>
+      <param name="ransac_threshold" value="3"/>
+      <param name="stereo_threshold" value="5"/>
+
+      <param name="debug_tracking" value="0"/>
+      <param name="check_orb" value="1"/>
+      <param name="check_stereo" value="1"/>
+      <param name="check_circle" value="1"/>
+      <param name="check_ransac" value="0"/>
+
+      <remap from="~imu" to="/imu0"/>
+      <remap from="~cam0_image" to="/cam0/image_raw"/>
+      <remap from="~cam1_image" to="/cam1/image_raw"/>
+
+    </node>
+
+
+</launch>
