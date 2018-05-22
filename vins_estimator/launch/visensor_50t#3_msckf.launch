@@ -1,0 +1,18 @@
+<launch>
+    <arg name="config_path" default = "$(find feature_tracker)/../config/visensor_50t#3/fisheye_left.yaml" />
+    
+    	  <arg name="vins_path" default = "$(find feature_tracker)/../config/../" />
+
+  <arg name="calibration_file" default="$(find msckf_vio)/config/camchain-imucam-50t3.yaml"/>
+    
+   <include file="$(find msckf_vio)/launch/image_processor_50t3.launch">
+    <arg name="calibration_file" value="$(arg calibration_file)"/>
+  </include>
+  
+    <node name="vins_estimator" pkg="vins_estimator" type="vins_estimator" output="screen">
+       <param name="config_file" type="string" value="$(arg config_path)" />
+       <param name="vins_folder" type="string" value="$(arg vins_path)" />
+       <remap from="/feature_tracker/feature" to="/image_processor/vins_features"/>
+    </node>
+
+</launch>

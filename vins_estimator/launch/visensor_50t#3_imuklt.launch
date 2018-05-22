@@ -1,0 +1,13 @@
+<launch>
+    <arg name="config_path" default = "$(find feature_tracker)/../config/visensor_50t#3/fisheye_left.yaml" />
+	  <arg name="vins_path" default = "$(find feature_tracker)/../config/../" />
+    
+    <node name="feature_tracker" pkg="feature_tracker_imu" type="klt_tracker_node" output="log">
+    </node>
+
+    <node name="vins_estimator" pkg="vins_estimator" type="vins_estimator" output="screen">
+       <param name="config_file" type="string" value="$(arg config_path)" />
+       <param name="vins_folder" type="string" value="$(arg vins_path)" />
+    </node>
+
+</launch>

@@ -1,0 +1,87 @@
+%YAML:1.0
+
+#common parameters
+imu_topic: "/imu1"
+image_topic: "/cam0/image_raw"
+output_path: "/config/visensor_100t#14/vins_result.csv"         # vins outputs will be wrttento vins_folder_path + output_path
+
+# MEI is better than PINHOLE for large FOV camera
+model_type: MEI
+camera_name: camera
+image_width: 640
+image_height: 480
+mirror_parameters:
+   xi: 2.565287073617281
+distortion_parameters:
+   k1: 0.09718618775666099
+   k2: 4.163934494012174
+   p1: -0.001372600835801248
+   p2: -0.00043538570705742676
+projection_parameters:
+   gamma1: 1006.7667023310498
+   gamma2: 1009.3493887228391
+   u0: 316.70461111184534
+   v0: 235.55818900711836
+
+# Extrinsic parameter between IMU and Camera.
+estimate_extrinsic: 1   # 0  Have an accurate extrinsic parameters. We will trust the following imu^R_cam, imu^T_cam, don't change it.
+                        # 1  Have an initial guess about extrinsic parameters. We will optimize around your initial guess.
+                        # 2  Don't know anything about extrinsic parameters. You don't need to give R,T. We will try to calibrate it. Do some rotation movement at beginning. 
+ex_calib_result_path: "/config/euroc/ex_calib_result.yaml"  # If you choose 1 or 2, the extrinsic calibration result will be written vins_folder_path + ex_calib_result_path.                        
+#If you choose 0 or 1, you should write down the following matrix.
+#Rotation from camera frame to imu frame, imu^R_cam
+extrinsicRotation: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 0.9993736114250995, 0.029826896211212057, 0.019045761984235573, 
+           -0.029093824199533578, 0.9988665489227657, -0.03767183080991737, 
+           -0.020147808332451538, 0.03709411955458694, 0.9991086488034567 ]
+
+
+#Translation from camera frame to imu frame, imu^T_cam
+extrinsicTranslation: !!opencv-matrix
+   rows: 3
+   cols: 1
+   dt: d
+   data: [ 0.007534813791893386, 0.09088013983370465,  0.0027230159918666718]
+
+#data: [ -0.06390759, 0.00191791,  0.03130562]
+
+#feature traker paprameters
+
+max_cnt: 150            # max feature number in feature tracking
+min_dist: 25            # min distance between two features 
+freq: 10                # frequence (Hz) of publish tracking result. At least 10Hz for good estimation. If set 0, the frequence will be same as raw image 
+F_threshold: 1.0        # ransac threshold (pixel)
+show_track: 1           # publish tracking image as topic
+equalize: 0             # if image is too dark or light, trun on equalize to find enough features
+fisheye: 1              # if using fisheye, trun on it. A circle mask will be loaded to remove edge noisy points
+gpu: 0                  # cuda accelerate feature tracker
+blur: 0                 # image bilateralFilter
+#optimization parameters
+
+max_solver_time: 0.035  # max solver itration time (ms), to guarantee real time
+max_num_iterations: 10   # max solver itrations, to guarantee real time
+keyframe_parallax: 10.0 # keyframe selection threshold (pixel)
+
+#imu parameters       The more accurate parameters you provide, the better performance
+acc_n: 0.014          # accelerometer measurement noise standard deviation. 250µg/√Hz  0.00294m/s^2
+gyr_n: 0.0008         # gyroscope measurement noise standard deviation. 0.01º/s/√Hz,0.00017452 rad/s
+acc_w: 0.00086       # accelerometer bias random work noise standard deviation. 0.0014 m/s^2
+gyr_w: 0.000022       # gyroscope bias random work noise standard deviation. 6e-5 rad/s
+#g_norm: 9.8       #
+
+#acc_n: 0.2          # accelerometer measurement noise standard deviation. 250µg/√Hz  0.00294m/s^2
+#gyr_n: 0.02         # gyroscope measurement noise standard deviation. 0.01º/s/√Hz,0.00017452 rad/s
+#acc_w: 0.0002        # accelerometer bias random work noise standard deviation. 0.0014 m/s^2
+#gyr_w: 2e-4       # gyroscope bias random work noise standard deviation. 1.5e-5 rad/s
+g_norm: 9.8       #
+
+
+#loop closure parameters
+loop_closure: 0    #if you want to use loop closure to minimize the drift, set loop_closure true and give your brief pattern file path and vocabulary file path accordingly;
+                     #also give the camera calibration file same as feature_tracker node
+pattern_file: "/support_files/brief_pattern.yml"
+voc_file: "/support_files/brief_k10L6.bin"
+min_loop_num: 20

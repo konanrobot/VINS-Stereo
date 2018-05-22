@@ -1,0 +1,41 @@
+<launch>
+
+
+  <!-- Image Processor Nodelet  -->
+  <arg name="calibration_file"
+    default="$(find msckf_vio)/config/camchain-imucam-50t3.yaml"/>
+
+    <node pkg="nodelet" type="nodelet" name="image_processor"
+      args="standalone msckf_vio/ImageProcessorNodelet"
+      output="screen">
+
+      <rosparam command="load" file="$(arg calibration_file)"/>
+      <param name="grid_row" value="12"/>
+      <param name="grid_col" value="16"/>
+      <param name="grid_min_feature_num" value="1"/>
+      <param name="grid_max_feature_num" value="1"/>
+      <param name="pyramid_levels" value="3"/>
+      <param name="patch_size" value="15"/>
+      <param name="fast_threshold" value="10"/>
+      <param name="max_iteration" value="30"/>
+      <param name="track_precision" value="0.01"/>
+      <param name="ransac_threshold" value="3"/>
+      <param name="stereo_threshold" value="5"/>
+
+      <remap from="~imu" to="/imu0"/>
+      <remap from="~cam0_image" to="/cam0/image_raw"/>
+      <remap from="~cam1_image" to="/cam1/image_raw"/>
+    </node>
+
+  <!-- vins estimator node  -->
+
+    <arg name="config_path" default = "$(find feature_tracker)/../config/visensor_50t#3/fisheye_left.yaml" />
+	  <arg name="vins_path" default = "$(find feature_tracker)/../config/../" />
+    
+    <node name="vins_estimator" pkg="vins_estimator" type="vins_estimator" output="screen">
+       <param name="config_file" type="string" value="$(arg config_path)" />
+       <param name="vins_folder" type="string" value="$(arg vins_path)" />
+       <remap from="feature_tracker/feature" to="image_processor/vins_features"/>
+    </node>
+
+</launch>

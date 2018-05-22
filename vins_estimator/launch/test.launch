@@ -1,0 +1,6 @@
+<launch>
+    <node name="rvizvisualisation" pkg="rviz" type="rviz" output="log" args="-d $(find vins_estimator)/../config/supervio.rviz" />
+    
+    <include file="$(find vins_estimator)/launch/visensor_100t#6.launch"/>
+</launch>
+
