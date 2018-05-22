@@ -7,13 +7,13 @@
     <include file="$(find image_processor)/launch/image_processor_100t14.launch"/>
 
     
-    <node name="vins_estimator_stereo" pkg="vins_estimator_stereo" type="vins_estimator_stereo" output="screen">
+    <node name="stereo_9250" pkg="vins_estimator_stereo" type="vins_estimator_stereo" output="screen">
        <param name="config_file" type="string" value="$(arg config_path)" />
        <param name="vins_folder" type="string" value="$(arg vins_path)" />
        <remap from="/feature_tracker/feature" to="/image_processor/vins_features"/>
     </node>
 
-    <node name="vins_estimator" pkg="vins_estimator" type="vins_estimator" output="screen">
+    <node name="mono_9250" pkg="vins_estimator" type="vins_estimator" output="screen">
        <param name="config_file" type="string" value="$(arg config_path)" />
        <!--param name="vins_folder" type="string" value="$(arg vins_path)" /-->
        <remap from="/feature_tracker/feature" to="/image_processor/vins_features"/>
