@@ -458,6 +458,7 @@ void process()
 
             TicToc t_s;
             map<int, vector<pair<int, Vector3d>>> image;
+#if 1
             for (unsigned int i = 0; i < img_msg->points.size()/2; i++)
             {
                 int v = img_msg->channels[0].values[i*2] + 0.5;
@@ -469,6 +470,19 @@ void process()
                 ROS_ASSERT(z == 1);
                 image[feature_id].emplace_back(camera_id, Vector3d(x, y, z));
             }
+#else
+	    for (unsigned int i = 0; i < img_msg->points.size(); i++)
+            {
+                int v = img_msg->channels[0].values[i*1] + 0.5;
+                int feature_id = v / NUM_OF_CAM;
+                int camera_id = v % NUM_OF_CAM;
+                double x = img_msg->points[i*1].x;
+                double y = img_msg->points[i*1].y;
+                double z = img_msg->points[i*1].z;
+                ROS_ASSERT(z == 1);
+                image[feature_id].emplace_back(camera_id, Vector3d(x, y, z));
+            }
+#endif
             estimator.processImage(image, img_msg->header);
             /**
             *** start build keyframe database for loop closure

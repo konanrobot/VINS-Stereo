@@ -4,7 +4,7 @@ Eigen::Matrix2d ProjectionFactor::sqrt_info;
 double ProjectionFactor::sum_t;
 
 #ifdef UNIT_SPHERE_ERROR
-#undef UNIT_SPHERE_ERROR
+//#undef UNIT_SPHERE_ERROR
 #endif
 
 ProjectionFactor::ProjectionFactor(const Eigen::Vector3d &_pts_i, const Eigen::Vector3d &_pts_j) : pts_i(_pts_i), pts_j(_pts_j)
