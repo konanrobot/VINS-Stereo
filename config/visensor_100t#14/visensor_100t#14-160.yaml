@@ -24,10 +24,10 @@ projection_parameters:
    v0: 235.55818900711836
 
 # Extrinsic parameter between IMU and Camera.
-estimate_extrinsic: 1   # 0  Have an accurate extrinsic parameters. We will trust the following imu^R_cam, imu^T_cam, don't change it.
+estimate_extrinsic: 0   # 0  Have an accurate extrinsic parameters. We will trust the following imu^R_cam, imu^T_cam, don't change it.
                         # 1  Have an initial guess about extrinsic parameters. We will optimize around your initial guess.
                         # 2  Don't know anything about extrinsic parameters. You don't need to give R,T. We will try to calibrate it. Do some rotation movement at beginning. 
-ex_calib_result_path: "/config/euroc/ex_calib_result.yaml"  # If you choose 1 or 2, the extrinsic calibration result will be written vins_folder_path + ex_calib_result_path.                        
+ex_calib_result_path: "/config/visensor_100t#14/ex_calib_result.yaml"  # If you choose 1 or 2, the extrinsic calibration result will be written vins_folder_path + ex_calib_result_path.                        
 #If you choose 0 or 1, you should write down the following matrix.
 #Rotation from camera frame to imu frame, imu^R_cam
 extrinsicRotation: !!opencv-matrix
@@ -61,8 +61,10 @@ gpu: 0                  # cuda accelerate feature tracker
 blur: 0                 # image bilateralFilter
 #optimization parameters
 
-max_solver_time: 0.035  # max solver itration time (ms), to guarantee real time
-max_num_iterations: 10   # max solver itrations, to guarantee real time
+#max_solver_time: 0.035  # max solver itration time (ms), to guarantee real time
+#max_num_iterations: 10   # max solver itrations, to guarantee real time
+max_solver_time: 0.065
+max_num_iterations: 20
 keyframe_parallax: 10.0 # keyframe selection threshold (pixel)
 
 #imu parameters       The more accurate parameters you provide, the better performance
