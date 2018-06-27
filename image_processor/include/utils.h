@@ -16,7 +16,7 @@
 /*
  * @brief utilities for msckf_vio
  */
-namespace utils {
+namespace myutils {
 Eigen::Isometry3d getTransformEigen(const ros::NodeHandle &nh,
                                     const std::string &field);
 
