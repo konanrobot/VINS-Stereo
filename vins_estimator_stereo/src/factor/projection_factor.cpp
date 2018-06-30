@@ -3,6 +3,12 @@
 Eigen::Matrix4d ProjectionFactor::sqrt_info;
 double ProjectionFactor::sum_t;
 
+//Eigen::Vector3d tc21(-0.07480350977811673,0.0003216683110021111,-0.0005091817629381968);  // ....
+//Eigen::Quaterniond qc21(0.99999797, 0.00092426967, -0.0017646535, 0.00013106555); //... (w,x,y,z)
+extern Eigen::Vector3d tc21;
+extern Eigen::Quaterniond qc21;
+
+
 #ifdef UNIT_SPHERE_ERROR  
 #undef UNIT_SPHERE_ERROR  
 #endif
@@ -74,12 +80,12 @@ bool ProjectionFactor::Evaluate(double const *const *parameters, double *residua
 #endif
     // right eye
     // qic: q from C to I
-    Eigen::Vector3d tc21(-0.07480350977811673,0.0003216683110021111,-0.0005091817629381968);  // ....
-    Eigen::Quaterniond qc21(0.99999797, 0.00092426967, -0.0017646535, 0.00013106555); //... (w,x,y,z)
+      //std::cerr<<qc21.w()<<std::endl;
+      //std::cerr<<tc21<<std::endl; 
     Eigen::Vector3d pts_camera_j_r = qc21 * pts_camera_j + tc21;
     double dep_j_r = pts_camera_j_r.z();
     residual.tail<2>() = (pts_camera_j_r / dep_j_r).head<2>() - pts_j_r.head<2>();
-    
+    //std::cerr<<"aaa"<<std::endl; 
 #endif
 
    residual = sqrt_info * residual;

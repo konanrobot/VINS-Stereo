@@ -22,7 +22,7 @@ projection_parameters:
    cy: 2.481e+02
 
 # Extrinsic parameter between IMU and Camera.
-estimate_extrinsic: 1   # 0  Have an accurate extrinsic parameters. We will trust the following imu^R_cam, imu^T_cam, don't change it.
+estimate_extrinsic: 0   # 0  Have an accurate extrinsic parameters. We will trust the following imu^R_cam, imu^T_cam, don't change it.
                         # 1  Have an initial guess about extrinsic parameters. We will optimize around your initial guess.
                         # 2  Don't know anything about extrinsic parameters. You don't need to give R,T. We will try to calibrate it. Do some rotation movement at beginning. 
 ex_calib_result_path: "/config/euroc/ex_calib_result.yaml"  # If you choose 1 or 2, the extrinsic calibration result will be written vins_folder_path + ex_calib_result_path.                        
@@ -32,15 +32,30 @@ extrinsicRotation: !!opencv-matrix
    rows: 3
    cols: 3
    dt: d
-   data: [0, -1, 0, 
-           1, 0, 0, 
-           0, 0, 1]
+   data: [0.014865542981794, 0.999557249008346,-0.025774436697440,
+         -0.999880929698575, 0.014967213324719, 0.003756188357967,
+          0.004140296794224, 0.025715529947966, 0.999660727177902]
 #Translation from camera frame to imu frame, imu^T_cam
 extrinsicTranslation: !!opencv-matrix
    rows: 3
    cols: 1
    dt: d
-   data: [-0.02,-0.06, 0.01]
+   data: [0.065222909535531,-0.020706385492719,-0.008054602460030]
+
+
+stereoRotation: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [0.999997256477881, 0.002312067192424, 0.000376008102415,
+         -0.002317135723281, 0.999898048506644, 0.014089835846648,
+         -0.000343393120525,-0.014090668452714, 0.999900662637729]
+#Translation from camera frame to imu frame, imu^T_cam
+stereoTranslation: !!opencv-matrix
+   rows: 3
+   cols: 1
+   dt: d
+   data: [-0.110073808127187, 0.000399121547014, -0.000853702503357]
 
 #feature traker paprameters
 max_cnt: 150            # max feature number in feature tracking
@@ -57,15 +72,15 @@ max_num_iterations: 8   # max solver itrations, to guarantee real time
 keyframe_parallax: 10.0 # keyframe selection threshold (pixel)
 
 #imu parameters       The more accurate parameters you provide, the better performance
-acc_n: 0.2          # accelerometer measurement noise standard deviation. #0.2
-gyr_n: 0.02         # gyroscope measurement noise standard deviation.     #0.05
-acc_w: 0.0002         # accelerometer bias random work noise standard deviation.  #0.02
-gyr_w: 2.0e-5       # gyroscope bias random work noise standard deviation.     #4.0e-5
+acc_n: 0.08          # accelerometer measurement noise standard deviation. #0.2   0.04
+gyr_n: 0.004         # gyroscope measurement noise standard deviation.     #0.05  0.004
+acc_w: 0.00004         # accelerometer bias random work noise standard deviation.  #0.02
+gyr_w: 2.0e-6       # gyroscope bias random work noise standard deviation.     #4.0e-5
 g_norm: 9.81007     # gravity magnitude
 
 
 #loop closure parameters
-loop_closure: 1   #if you want to use loop closure to minimize the drift, set loop_closure true and give your brief pattern file path and vocabulary file path accordingly;
+loop_closure: 0   #if you want to use loop closure to minimize the drift, set loop_closure true and give your brief pattern file path and vocabulary file path accordingly;
                      #also give the camera calibration file same as feature_tracker node
 pattern_file: "/support_files/brief_pattern.yml"
 voc_file: "/support_files/brief_k10L6.bin"

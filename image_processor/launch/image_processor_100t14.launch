@@ -11,8 +11,8 @@
       output="screen">
 
       <rosparam command="load" file="$(arg calibration_file)"/>
-      <param name="grid_row" value="12"/>
-      <param name="grid_col" value="16"/>
+      <param name="grid_row" value="16"/>
+      <param name="grid_col" value="20"/>
       <param name="grid_min_feature_num" value="1"/>
       <param name="grid_max_feature_num" value="1"/>
       <param name="pyramid_levels" value="4"/>
@@ -23,8 +23,10 @@
       <param name="ransac_threshold" value="3"/>
       <param name="stereo_threshold" value="5"/>
 
+      <param name="equalize" value="1"/>
+
       <param name="debug_tracking" value="0"/>
-      <param name="check_orb" value="1"/>
+      <param name="check_orb" value="0"/>
       <param name="check_stereo" value="1"/>
       <param name="check_circle" value="1"/>
       <param name="check_ransac" value="0"/>

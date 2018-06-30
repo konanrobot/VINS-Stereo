@@ -23,6 +23,8 @@ public:
 
     CameraPtr generateCameraFromYamlFile(const std::string& filename);
 
+    CameraPtr generateCameraFromValue(std::string sModelType, int nWidth, int nHeight, std::vector<double>vIntrinsics,  std::vector<double>vDistortionCoeffs);
+
 private:
     static boost::shared_ptr<CameraFactory> m_instance;
 };

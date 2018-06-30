@@ -28,6 +28,11 @@ int IMAGE_ROW, IMAGE_COL;
 std::string VINS_FOLDER_PATH;
 int MAX_KEYFRAME_NUM;
 
+
+// add by sst
+Eigen::Vector3d tc21;
+Eigen::Quaterniond qc21;
+
 template <typename T>
 T readParam(ros::NodeHandle &n, std::string name)
 {
@@ -101,10 +106,12 @@ void readParameters(ros::NodeHandle &n)
         cv::Mat cv_R, cv_T;
         fsSettings["extrinsicRotation"] >> cv_R;
         fsSettings["extrinsicTranslation"] >> cv_T;
-
-	cv_R = cv_R.t();
-	cv_T = -cv_R.t()*cv_T;
 	
+	cv_T = -cv_R.t()*cv_T;
+        cv_R = cv_R.t();
+	
+	std::cout<<"-T"<<cv_T<<std::endl;
+        std::cout<<"-T"<<-cv_T<<std::endl;
         Eigen::Matrix3d eigen_R;
         Eigen::Vector3d eigen_T;
         cv::cv2eigen(cv_R, eigen_R);
@@ -118,7 +125,23 @@ void readParameters(ros::NodeHandle &n)
         
     } 
 
-
+#if 1
+    // cam0 2 cam1
+    cv::Mat cv_R21, cv_T21;
+    fsSettings["stereoRotation"] >> cv_R21;
+    fsSettings["stereoTranslation"] >> cv_T21;
+	
+    Eigen::Matrix3d eigen_R21;
+    Eigen::Vector3d eigen_T21;
+    cv::cv2eigen(cv_R21, eigen_R21);
+    cv::cv2eigen(cv_T21, eigen_T21);
+    Eigen::Quaterniond Q21(eigen_R21);
+    eigen_R21 = Q21.normalized();
+    qc21 = Q21.normalized();
+    tc21 = eigen_T21;
+    ROS_INFO_STREAM("stereo_R : " << std::endl << eigen_R21);
+    ROS_INFO_STREAM("stereo_T : " << std::endl << tc21.transpose());
+#endif
 
     LOOP_CLOSURE = fsSettings["loop_closure"];
     if (LOOP_CLOSURE == 1)

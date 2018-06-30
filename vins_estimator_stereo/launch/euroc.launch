@@ -1,15 +1,23 @@
 <launch>
-    <arg name="config_path" default = "$(find feature_tracker)/../config/euroc/euroc_config.yaml" />
-	  <arg name="vins_path" default = "$(find feature_tracker)/../config/../" />
+    <node name="rvizvisualisation" pkg="rviz" type="rviz" output="log" args="-d $(find vins_estimator)/../config/default.rviz" />
     
-    <node name="feature_tracker" pkg="feature_tracker" type="feature_tracker" output="log">
-        <param name="config_file" type="string" value="$(arg config_path)" />
-        <param name="vins_folder" type="string" value="$(arg vins_path)" />
-    </node>
+    <arg name="config_path" default = "$(find vins_estimator)/../config/euroc/euroc_config.yaml" />
+    <arg name="vins_path" default = "$(find vins_estimator)/../config/../" />
 
-    <node name="vins_estimator" pkg="vins_estimator" type="vins_estimator" output="screen">
+    <include file="$(find image_processor)/launch/image_processor_euroc.launch"/>
+
+    
+    <node name="stereo" pkg="vins_estimator_stereo" type="vins_estimator_stereo" output="screen">
        <param name="config_file" type="string" value="$(arg config_path)" />
        <param name="vins_folder" type="string" value="$(arg vins_path)" />
+       <remap from="/feature_tracker/feature" to="/image_processor/vins_features"/>
     </node>
 
+    <node name="mono" pkg="vins_estimator" type="vins_estimator" output="screen">
+       <param name="config_file" type="string" value="$(arg config_path)" />
+       <!--param name="vins_folder" type="string" value="$(arg vins_path)" /-->
+       <remap from="/feature_tracker/feature" to="/image_processor/vins_features"/>
+    </node>
+
+   
 </launch>

@@ -92,6 +92,31 @@ bool ImageProcessor::loadParameters() {
   cam1_distortion_coeffs[2] = cam1_distortion_coeffs_temp[2];
   cam1_distortion_coeffs[3] = cam1_distortion_coeffs_temp[3];
 
+  string cam0_camera_model, cam1_camera_model;
+  nh.param<string>("cam0/camera_model",cam0_camera_model, string("null"));
+  nh.param<string>("cam1/camera_model",cam1_camera_model, string("null"));
+  
+  string mode_type; 
+  if(cam0_camera_model.find("pinhole") != string::npos && cam0_distortion_model.find("radtan") != string::npos) {
+    mode_type = "pinhole";
+  } else if(cam0_camera_model.find("pinhole") != string::npos && cam0_distortion_model.find("equidistant") != string::npos) {
+    mode_type = "kannala_brandt";
+  }else if(cam0_camera_model.find("mei") != string::npos) {
+    mode_type = "mei";
+    cout << "only support pinhole-radtan and pinhole-equi,mei is not supported  in msckf" << endl;
+    return false;
+  } else {
+    cerr << "camera model not supported:" <<cam0_camera_model<< endl;
+    return false;
+  }
+  cerr << "camera0 model type:" <<mode_type<< endl;
+
+  
+  m_camera[0] = camodocal::CameraFactory::instance()->generateCameraFromValue(mode_type, 
+         cam0_resolution_temp[0], cam0_resolution_temp[1], cam0_intrinsics_temp, cam0_distortion_coeffs_temp);
+  m_camera[1] =  camodocal::CameraFactory::instance()->generateCameraFromValue(mode_type, 
+         cam1_resolution_temp[0], cam1_resolution_temp[1], cam1_intrinsics_temp, cam1_distortion_coeffs_temp);
+  
   //timeshift: t_imu=t_cam+timeshift
   nh.param<double>("cam0/timeshift_cam_imu", processor_config.timeshift, 0);
 
@@ -133,6 +158,12 @@ bool ImageProcessor::loadParameters() {
       processor_config.stereo_threshold, 3);
 
   //
+  nh.param<int>("equalize",processor_config.equalize, 0);
+  if(processor_config.equalize) {
+    clahe = cv::createCLAHE(3.0, cv::Size(8, 8));
+  }
+
+  //
   nh.param<int>("debug_tracking",processor_config.debug_tracking, 0);
   nh.param<int>("check_orb",processor_config.check_orb, 0);
   nh.param<int>("check_stereo",processor_config.check_stereo, 0);
@@ -145,6 +176,8 @@ bool ImageProcessor::loadParameters() {
   ROS_INFO("cam0_intrinscs: %f, %f, %f, %f",
       cam0_intrinsics[0], cam0_intrinsics[1],
       cam0_intrinsics[2], cam0_intrinsics[3]);
+  ROS_INFO("cam0_camera_model: %s",
+      cam0_camera_model.c_str());
   ROS_INFO("cam0_distortion_model: %s",
       cam0_distortion_model.c_str());
   ROS_INFO("cam0_distortion_coefficients: %f, %f, %f, %f",
@@ -156,6 +189,8 @@ bool ImageProcessor::loadParameters() {
   ROS_INFO("cam1_intrinscs: %f, %f, %f, %f",
       cam1_intrinsics[0], cam1_intrinsics[1],
       cam1_intrinsics[2], cam1_intrinsics[3]);
+  ROS_INFO("cam1_camera_model: %s",
+      cam1_camera_model.c_str());
   ROS_INFO("cam1_distortion_model: %s",
       cam1_distortion_model.c_str());
   ROS_INFO("cam1_distortion_coefficients: %f, %f, %f, %f",
@@ -229,10 +264,7 @@ bool ImageProcessor::initialize() {
     return false;
   ROS_INFO("Finish creating ROS IO...");
 
-  const string calib_file0 = "/home/sst/catkin_ws2/src/VINS-Mono-Super/config/visensor_100t#14/visensor_100t#14.yaml";
-  const string calib_file1 = "/home/sst/catkin_ws2/src/VINS-Mono-Super/config/visensor_100t#14/right.yaml";
-  m_camera[0] = camodocal::CameraFactory::instance()->generateCameraFromYamlFile(calib_file0);
-  m_camera[1] = camodocal::CameraFactory::instance()->generateCameraFromYamlFile(calib_file1);
+
 
   return true;
 }
@@ -253,14 +285,25 @@ void ImageProcessor::stereoCallback(const sensor_msgs::ImageConstPtr& cam0_img,c
   // 补偿时间戳，把图像时间转到imu时间系下
   // t_imu = t_cam + timeshift
   ros::Duration offset(processor_config.timeshift);
-  sensor_msgs::Image img0,img1;
-  img0 = *cam0_img;
-  img1 = *cam1_img;
-  img0.header.stamp = cam0_img->header.stamp + offset;
-  img1.header.stamp = cam1_img->header.stamp + offset;
+  sensor_msgs::Image msg0 = *cam0_img;
+  sensor_msgs::Image msg1 = *cam1_img;
+  msg0.header.stamp = cam0_img->header.stamp + offset;
+  msg1.header.stamp = cam1_img->header.stamp + offset;
 
-  cam0_curr_img_ptr = cv_bridge::toCvCopy(img0, sensor_msgs::image_encodings::MONO8);
-  cam1_curr_img_ptr = cv_bridge::toCvCopy(img1, sensor_msgs::image_encodings::MONO8);
+  if(processor_config.equalize) {
+    cv_bridge::CvImagePtr cv_ptr0 = cv_bridge::toCvCopy(msg0, "mono8");
+    cv_bridge::CvImagePtr cv_ptr1 = cv_bridge::toCvCopy(msg1, "mono8");
+    Mat img0,img1;
+    clahe->apply(cv_ptr0->image, img0);
+    clahe->apply(cv_ptr1->image, img1);
+    cv_ptr0->image = img0.clone();
+    cv_ptr1->image = img1.clone();
+    msg0 = *cv_ptr0->toImageMsg();
+    msg1 = *cv_ptr1->toImageMsg();
+  }
+
+  cam0_curr_img_ptr = cv_bridge::toCvCopy(msg0, "mono8");
+  cam1_curr_img_ptr = cv_bridge::toCvCopy(msg1, "mono8");
 
   //fprintf(stderr,"image:%lf\n",img0.header.stamp.toSec());
 #else
@@ -1753,7 +1796,7 @@ void ImageProcessor::drawFeaturesStereo() {
       cv::Point2f pt1 = curr_cam1_points[new_cam0_point.first] + Point2f(img_width, 0.0);
 
       circle(out_img, pt0, 3, new_feature, -1);
-      circle(out_img, pt1, 3, new_feature, -1);
+      //circle(out_img, pt1, 3, new_feature, -1);
     }
 
     //draw text
@@ -1914,7 +1957,7 @@ void ImageProcessor::checkWithORB(Mat image0,
 
 bool isNotSame(cv::Point2f p1, cv::Point2f p2)
 {
-  return(fabsf(p1.x-p2.x)>0.1 || fabsf(p1.y-p2.y)>0.1);
+  return(fabsf(p1.x-p2.x)>0.5 || fabsf(p1.y-p2.y)>0.5);
 }
   
 void ImageProcessor::checkWithCircle(vector<Point2f> prev_pts0,

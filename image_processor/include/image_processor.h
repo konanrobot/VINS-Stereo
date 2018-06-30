@@ -68,6 +68,7 @@ private:
     double ransac_threshold;
     double stereo_threshold;
 
+    int equalize;
     int debug_tracking;
     int check_orb;
     int check_circle;
@@ -428,6 +429,9 @@ private:
   std::vector<cv::Point2f> orb_outliers;
   std::vector<cv::Point2f> stereo_outliers;
   std::vector<cv::Point2f> circle_outliers;
+
+  //
+  cv::Ptr<cv::CLAHE> clahe;
 };
 
 typedef ImageProcessor::Ptr ImageProcessorPtr;
